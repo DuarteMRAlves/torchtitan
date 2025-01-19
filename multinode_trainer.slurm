@@ -10,15 +10,15 @@
 # --- constraint issues or to tune for improved performance.
 # ---
 
-#SBATCH --job-name=torchtitan_debug
+#SBATCH --job-name=llama3_500m
 
 #SBATCH --ntasks-per-node=1
 
 #SBATCH --nodes=1
 
-#SBATCH --gpus-per-task=2
+#SBATCH --gpus-per-task=1
 
-#SBATCH --cpus-per-task=16
+#SBATCH --cpus-per-task=8
 
 #SBATCH --partition=a6000
 
@@ -56,7 +56,7 @@ export NCCL_BUFFSIZE=2097152
 #export TORCH_DIST_INIT_BARRIER=1
 #export FI_EFA_SET_CUDA_SYNC_MEMOPS=0
 
-CONFIG_FILE=${CONFIG_FILE:-"./train_configs/debug_model.toml"}
+CONFIG_FILE=${CONFIG_FILE:-"./train_configs/llama3_500m.toml"}
 
 #dcgmi profile --pause
 # adjust sbatch --ntasks and sbatch --nodes above and --nnodes below

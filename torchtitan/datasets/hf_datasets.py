@@ -49,6 +49,13 @@ DATASETS = {
         loader=lambda path: load_dataset(path, split="train"),
         text_processor=_process_c4_text,
     ),
+    "fineweb-edu-100bt": DatasetConfig(
+        path="HuggingFaceFW/fineweb-edu",
+        loader=lambda path: load_dataset(
+            path, name="sample-100BT", split="train", streaming=True
+        ),
+        text_processor=lambda sample: sample["text"],
+    ),
 }
 
 
