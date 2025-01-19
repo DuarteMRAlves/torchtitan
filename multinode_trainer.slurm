@@ -10,17 +10,19 @@
 # --- constraint issues or to tune for improved performance.
 # ---
 
-#SBATCH --job-name=torchtitan_multi_node
+#SBATCH --job-name=torchtitan_debug
 
-#SBATCH --ntasks=4
+#SBATCH --ntasks-per-node=1
 
-#SBATCH --nodes=4
+#SBATCH --nodes=1
 
-#SBATCH --gpus-per-task=8
+#SBATCH --gpus-per-task=2
 
-#SBATCH --cpus-per-task=96
+#SBATCH --cpus-per-task=16
 
-#SBATCH --partition=train
+#SBATCH --partition=a6000
+
+#SBATCH --qos=gpu-debug
 
 
 nodes=( $( scontrol show hostnames $SLURM_JOB_NODELIST ) )
@@ -31,10 +33,10 @@ head_node_ip=$(srun --nodes=1 --ntasks=1 -w "$head_node" hostname --ip-address)
 echo Node IP: $head_node_ip
 export LOGLEVEL=INFO
 # Enable for A100
-export FI_PROVIDER="efa"
+#export FI_PROVIDER="efa"
 # Ensure that P2P is available
 # export NCCL_P2P_DISABLE=1
-export NCCL_IB_DISABLE=1
+#export NCCL_IB_DISABLE=1
 
 # debugging flags (optional)
 export NCCL_DEBUG=WARN
@@ -43,8 +45,8 @@ export PYTHONFAULTHANDLER=1
 # export NCCL_DEBUG=INFO
 # NCCL_DEBUG_SUBSYS=INIT,GRAPH,ENV
 
-export LD_LIBRARY_PATH=/opt/amazon/efa/lib:$LD_LIBRARY_PATH
-export LD_LIBRARY_PATH=/usr/local/lib/:$LD_LIBRARY_PATH
+#export LD_LIBRARY_PATH=/opt/amazon/efa/lib:$LD_LIBRARY_PATH
+#export LD_LIBRARY_PATH=/usr/local/lib/:$LD_LIBRARY_PATH
 export CUDA_LAUNCH_BLOCKING=0
 
 # on your cluster you might need these:
@@ -52,12 +54,18 @@ export CUDA_LAUNCH_BLOCKING=0
 export NCCL_SOCKET_IFNAME="eth0,en,eth,em,bond"
 export NCCL_BUFFSIZE=2097152
 #export TORCH_DIST_INIT_BARRIER=1
-export FI_EFA_SET_CUDA_SYNC_MEMOPS=0
+#export FI_EFA_SET_CUDA_SYNC_MEMOPS=0
 
-CONFIG_FILE=${CONFIG_FILE:-"./train_configs/llama3_8b.toml"}
+CONFIG_FILE=${CONFIG_FILE:-"./train_configs/debug_model.toml"}
 
-dcgmi profile --pause
+#dcgmi profile --pause
 # adjust sbatch --ntasks and sbatch --nodes above and --nnodes below
 # to your specific node count, and update target launch file.
-srun torchrun --nnodes 4 --nproc_per_node 8 --rdzv_id 101 --rdzv_backend c10d --rdzv_endpoint "$head_node_ip:29500" ./train.py --job.config_file ${CONFIG_FILE}
-dcgmi profile --resume
+srun torchrun \
+    --nnodes ${SLURM_NNODES} \
+    --nproc_per_node ${SLURM_GPUS_PER_TASK} \
+    --rdzv_id 101 \
+    --rdzv_backend c10d \
+    --rdzv_endpoint "$head_node_ip:29500" \
+    ./train.py --job.config_file ${CONFIG_FILE}
+#dcgmi profile --resume
