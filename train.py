@@ -33,6 +33,7 @@ from torchtitan.utils import device_module, device_type
 # Enable debug tracing on failure: https://pytorch.org/docs/stable/elastic/errors.html
 @record
 def main(job_config: JobConfig):
+    torch.set_float32_matmul_precision("high")
     init_logger()
     logger.info(f"Starting job: {job_config.job.description}")
 

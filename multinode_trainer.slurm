@@ -25,10 +25,14 @@
 #SBATCH --qos=gpu-debug
 
 
+source /mnt/data-artemis/duarte/torchtitan-venv/bin/activate
+
+
 nodes=( $( scontrol show hostnames $SLURM_JOB_NODELIST ) )
 nodes_array=($nodes)
 head_node=${nodes_array[0]}
 head_node_ip=$(srun --nodes=1 --ntasks=1 -w "$head_node" hostname --ip-address)
+port=$(( ( RANDOM % 100 )  + 29500 ))
 
 echo Node IP: $head_node_ip
 export LOGLEVEL=INFO
@@ -66,6 +70,6 @@ srun torchrun \
     --nproc_per_node ${SLURM_GPUS_PER_TASK} \
     --rdzv_id 101 \
     --rdzv_backend c10d \
-    --rdzv_endpoint "$head_node_ip:29500" \
+    --rdzv_endpoint "$head_node_ip:$port" \
     ./train.py --job.config_file ${CONFIG_FILE}
 #dcgmi profile --resume
