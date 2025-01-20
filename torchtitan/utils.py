@@ -319,6 +319,10 @@ def get_peak_flops(device_name: str) -> int:
     elif "H200" in device_name:
         # data from https://www.nvidia.com/en-us/data-center/h200/
         return 989e12
+    elif "A6000" in device_name:
+        # data from https://www.nvidia.com/en-us/design-visualization/rtx-a6000/
+        # NOTE: Dividing by two to remove sparsity benefits.
+        return 309.7e12 / 2
     else:  # for other GPU types, assume A100
         logger.warning(f"Peak flops undefined for: {device_name}, fallback to A100")
         return 312e12
